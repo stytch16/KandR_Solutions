@@ -1,0 +1,287 @@
+#include <stdio.h>
+#include <stdlib.h> /* for atof() */
+
+#define MAXOP 100 /* max size of operand or operator*/
+#define NUMBER '0' /* signal that a number was found */
+#define VARIABLE '1' /* signal that a variable was found */
+
+int getop(char []);
+void push(double);
+double pop(void);
+
+/* reverse Polish calculator */
+int main(void)
+{
+	int type; /* type of variable from stack array */
+	double op2; /* temporary variable for holding operand */
+	char s[MAXOP]; /* operator & operand stack array */
+
+	while ((type = getop(s)) != EOF) {
+		switch (type) {
+			case NUMBER:
+				push(atof(s));
+				break;
+			case VARIABLE:
+				
+				/* <!-- Fri Aug  5 02:21:57 2016 -->
+				 * <!-- TODO: How do you handle variables?? -->
+				 */
+				
+				break;
+			case '+':
+				push(pop() + pop());
+				break;
+			case '*':
+				push(pop() * pop());
+				break;
+			case '-':
+				op2 = pop();
+				push(pop() - op2);
+				break;
+			case '/':
+				op2 = pop();
+				if (op2 != 0.0) {
+					push(pop() / op2);
+				}
+				else {
+					printf("Error: dividing by 0\n");
+				}
+				break;
+			case '%':
+				op2 = pop();
+				if (op2 != 0.0) {
+					push((int)pop() % (int)op2);
+				} else {
+					printf("Error: modulo by 0\n");
+				}
+			case '\n':
+				printf("\t%.8g\n", pop());
+				break;
+			default:
+				printf("Error: processing unknown command %s\n", s);
+				break;
+				
+		}
+	}
+	return 0;
+}
+
+/* <--- Stack functions ---> */
+#define MAXVAL 100
+
+/* External variables */
+int sp = 0; /* next free stack position, i.e. top */
+double val[MAXVAL]; /* value stack */
+
+/* Purpose: Push double value onto stack
+ * Input: double value
+ * Output: none
+ * Invariant (if any):  */
+void push(double f)
+{
+	if (sp < MAXVAL) {
+		val[sp++] = f;
+	} else {
+		printf("error: stack is full. can't push %g\n", f);
+	}
+}
+
+/* Purpose: Pop double value from stack
+ * Input: none
+ * Output: double value
+ * Invariant (if any): none */
+double pop(void)
+{
+	if (sp > 0) {
+		return val[--sp];
+	} else {
+		printf("error: stack is empty\n");
+		return 0.0;
+	}
+}
+
+/* Purpose: Return copy of top element in stack
+ * Input: none
+ * Output: double value of copy
+ * Invariant (if any): none */
+double top(void)
+{
+	if (sp > 0) {
+		return val[sp];
+	} else {
+		printf("error: stack is empty\n");
+		return 0.0;
+	}
+}
+
+/* Purpose: Print the top element in stack
+ * Input: none
+ * Output: none
+ * Invariant (if any): none */
+void peek(void)
+{
+	if (sp > 0) {
+		printf("%g\n", val[sp]);
+	} else {
+		printf("error: stack is empty\n");
+	}
+}
+
+/* Purpose: Duplicate top element of stack
+ * Input: none
+ * Output: none
+ * Invariant (if any): none */
+void duplicate(void)
+{
+	if (sp >= 0) {
+		val[sp + 1] = val[sp];
+		++sp;
+	} else {
+		printf("duplicate() error: stack is empty\n");
+	}
+
+/* Purpose: Swap top element and element before top
+ * Input: none
+ * Output: none
+ * Invariant (if any): none */
+void swap(void)
+{
+	if (sp < 1) {
+		printf("swap() error: >2 elements in stack\n");
+		return;
+	}
+	double temp = val[sp];
+	val[sp] = val[sp - 1];
+	val[sp - 1] = temp;
+}
+
+/* Purpose: Clear the stack
+ * Input: none
+ * Output: none
+ * Invariant (if any): Losing the index => losing the elements */
+void clear(void)
+{
+	sp = -1;
+}
+/* <--- getop function ---> */
+#define isdigit(x) (('0' <=  (x) && (x) <= '9') ? 1 : 0 )
+#define isalpha(x) ( (( 'a' <= (x) && (x) <= 'z' ) || ( 'A' <= (x) && (x) <= 'Z' )) ? 1 : 0 )
+#define iswhitesp(x) ( ( (x) == ' ' || (x) == '\t' ) ? 1 : 0 ) 
+
+int getch(void);
+void ungetch(int);
+
+/* Purpose: get next operator or numeric operand
+ * Input: postfix expression
+ * Output: ascii value if operator. Else, returns 0 for number.
+ * Invariant (if any): every operand has a different ascii value */
+int getop(char s[])
+{
+	int i, c ; /* pos in s, char variable, char variable */
+	int variable_flag; /* for signaling when a variable is in the input stream */
+	/* s[0] must be a whitespace */
+	while ( iswhitesp(s[0] = c = getch() )) {
+		/* skip whitespace */
+	}
+	s[1] = '\0';
+	if (!(isdigit(c)) && !(isalpha(c)) && c != '.' ) {
+		return c;  /* ascii value of operator returned */
+	}
+	
+	/* <!-- Fri Aug  5 01:43:38 2016 -->
+	 * <!-- TODO: Handle negative numbers -->
+	 */
+	
+	/* Wait! '-' can be an operator or the negative sign of an operand.
+	 * In postfix, a '-' before a space must be a minus operator.
+	 * If it precedes a digit, it is a negative sign.
+	 */
+	i = 0;	
+	variable_flag = 0;
+	if (isalpha(c)) {
+		variable_flag = 1;
+		while (isalpha(s[++i] = c = getch())) {
+			/* get the entire string variable and store in s */
+		}
+	}
+
+	if (isdigit(c)) {
+		while (isdigit(s[++i] = c = getch())) {
+			/* get the integer until non-digit or '.' and store in s including
+			 * non-digit or '.'*/
+		}
+	}
+	if (c == '.') {
+		while (isdigit(s[++i] = c = getch())) {
+			/* get the fraction portion and store in s */
+		}
+	}
+
+	/* Wait! We copied one too many to s, the final non-digit. */
+	s[i] = '\0';
+	if (c != EOF) {
+		ungetch(c);
+	}
+	
+	if (variable_flag) {
+		return VARIABLE;
+	} else {
+		return NUMBER;
+	}
+}
+
+/* <--- getch() and ungetch() for managing input stream --> */
+#define BUFSIZE 100
+
+char buf[BUFSIZE]; /* shared buffer array for input stream */
+int bufp = 0; /* next free position in buffer */
+
+/* Purpose: Get a char input. But if there is a char in buffer, it will return that instead.
+ * Input: none
+ * Output: returns char element in buffer. if no elements in buffer, gets char input
+ * Invariant (if any): elements are put in buffer if and only if ungetch() is called.
+ *                     Calling ungetch() n times will result in getch() returning buffer
+ *                     elements the next n times */
+int getch(void)
+{
+	return ( ( bufp > 0 ) ? buf[--bufp] : getchar() );
+}
+
+/* Purpose: Store char in buffer
+ * Input: char. this must be the last ch received from getch() in order to cooperate w/ getch()
+ * Output: none
+ * Invariant (if any): see getch() description */
+void ungetch(int c)
+{
+	if (bufp >= BUFSIZE) {
+		printf("error: buffer is full. Can't save any more input elements\n");
+	} else {
+		buf[bufp++] = c;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
